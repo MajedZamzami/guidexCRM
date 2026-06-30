@@ -1,15 +1,16 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import type { Company, PipelineStage } from "@/lib/types/database";
+import type { PipelineStage } from "@/lib/types/database";
 import { PipelineCard } from "@/components/pipeline/pipeline-card";
+import type { PipelineCompanyRow } from "@/components/pipeline/pipeline-board";
 
 export function PipelineColumn({
   stage,
-  companies,
+  rows,
 }: {
   stage: PipelineStage;
-  companies: Company[];
+  rows: PipelineCompanyRow[];
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
@@ -23,7 +24,7 @@ export function PipelineColumn({
           />
           <span className="text-sm font-medium">{stage.name}</span>
         </div>
-        <span className="text-xs text-muted-foreground">{companies.length}</span>
+        <span className="text-xs text-muted-foreground">{rows.length}</span>
       </div>
       <div
         ref={setNodeRef}
@@ -31,8 +32,15 @@ export function PipelineColumn({
           isOver ? "bg-primary/5" : ""
         }`}
       >
-        {companies.map((company) => (
-          <PipelineCard key={company.id} company={company} />
+        {rows.map((row) => (
+          <PipelineCard
+            key={row.company.id}
+            company={row.company}
+            contactCount={row.contactCount}
+            addedByName={row.addedByName}
+            lastActivityType={row.lastActivityType}
+            lastActivityAt={row.lastActivityAt}
+          />
         ))}
       </div>
     </div>

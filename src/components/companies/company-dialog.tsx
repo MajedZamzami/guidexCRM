@@ -38,6 +38,7 @@ function toFormState(company?: Company | null) {
     stage_id: company?.stage_id ?? "",
     health_status: (company?.health_status ?? "active") as HealthStatus,
     deal_value: company?.deal_value?.toString() ?? "",
+    opportunity_score: company?.opportunity_score?.toString() ?? "",
   };
 }
 
@@ -108,6 +109,7 @@ function CompanyForm({
       stage_id: form.stage_id || null,
       health_status: form.health_status,
       deal_value: form.deal_value ? Number(form.deal_value) : null,
+      opportunity_score: form.opportunity_score ? Number(form.opportunity_score) : null,
     };
 
     const { error } = isEdit
@@ -207,6 +209,18 @@ function CompanyForm({
               onChange={(e) => update("deal_value", e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="opportunity_score">Opportunity score (0-100)</Label>
+          <Input
+            id="opportunity_score"
+            type="number"
+            min="0"
+            max="100"
+            value={form.opportunity_score}
+            onChange={(e) => update("opportunity_score", e.target.value)}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">

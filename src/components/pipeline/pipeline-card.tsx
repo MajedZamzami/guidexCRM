@@ -4,11 +4,33 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { Company } from "@/lib/types/database";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { HealthBadge } from "@/components/health-badge";
-import { formatCurrency, timeAgo } from "@/lib/format";
-import { Building2 } from "lucide-react";
+import { timeAgo } from "@/lib/format";
+import { Building2, Users } from "lucide-react";
 
-export function PipelineCard({ company }: { company: Company }) {
+const TYPE_LABELS: Record<string, string> = {
+  call: "Call",
+  email: "Email",
+  meeting: "Meeting",
+  whatsapp: "WhatsApp",
+  note: "Note",
+  other: "Activity",
+};
+
+export function PipelineCard({
+  company,
+  contactCount,
+  addedByName,
+  lastActivityType,
+  lastActivityAt,
+}: {
+  company: Company;
+  contactCount: number;
+  addedByName: string | null;
+  lastActivityType: string | null;
+  lastActivityAt: string | null;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: company.id });
 
@@ -37,14 +59,26 @@ export function PipelineCard({ company }: { company: Company }) {
         {company.industry && (
           <p className="truncate text-xs text-muted-foreground">{company.industry}</p>
         )}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{formatCurrency(company.deal_value)}</span>
-          <span>{timeAgo(company.last_activity_at)}</span>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Users className="size-3.5" />
+            {contactCount}
+          </span>
+          {addedByName && <span className="truncate">Added by {addedByName}</span>}
         </div>
-        {company.next_action_title && (
-          <p className="truncate rounded bg-accent px-2 py-1 text-xs text-accent-foreground">
-            {company.next_action_title}
+        {lastActivityAt && (
+          <p className="text-xs text-muted-foreground">
+            {TYPE_LABELS[lastActivityType ?? ""] ?? "Stage Change"} · {timeAgo(lastActivityAt)}
           </p>
+        )}
+        {company.opportunity_score !== null && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Opportunity</span>
+              <span>{company.opportunity_score}%</span>
+            </div>
+            <Progress value={company.opportunity_score} className="h-1.5" />
+          </div>
         )}
       </CardContent>
     </Card>

@@ -27,22 +27,26 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  // getSession() reads the JWT from cookies with no network round-trip, unlike
+  // getUser(). Middleware only needs a fast "is there a session" check here —
+  // the (app) layout server component still calls getUser() to fully verify
+  // the token before rendering anything sensitive.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const isPublicPath = PUBLIC_PATHS.some((path) =>
     request.nextUrl.pathname.startsWith(path),
   );
 
-  if (!user && !isPublicPath) {
+  if (!session && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  if (user && request.nextUrl.pathname === "/login") {
+  if (session && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";

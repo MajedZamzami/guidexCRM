@@ -173,7 +173,7 @@ export function CompaniesView({
                 <TableRow
                   key={company.id}
                   className="cursor-pointer"
-                  onClick={() => openEdit(company)}
+                  onClick={() => router.push(`/companies/${company.id}`)}
                 >
                   <TableCell className="font-medium">{company.name}</TableCell>
                   <TableCell className="text-muted-foreground">
