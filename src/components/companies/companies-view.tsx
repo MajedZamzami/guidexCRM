@@ -294,7 +294,7 @@ export function CompaniesView({
             return (
               <Card
                 key={company.id}
-                className="cursor-pointer gap-3 px-4 transition-colors hover:bg-accent/40"
+                className="h-48 cursor-pointer gap-3 overflow-hidden px-4 transition-colors hover:bg-accent/40"
                 onClick={() => router.push(`/companies/${company.id}`)}
               >
                 <div className="flex items-start justify-between gap-2">

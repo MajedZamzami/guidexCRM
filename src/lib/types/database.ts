@@ -272,19 +272,22 @@ export interface Database {
         Row: {
           id: string;
           company_id: string;
-          user_id: string;
+          user_id: string | null;
+          member_name: string | null;
           assigned_at: string;
         };
         Insert: {
           id?: string;
           company_id: string;
-          user_id: string;
+          user_id?: string | null;
+          member_name?: string | null;
           assigned_at?: string;
         };
         Update: {
           id?: string;
           company_id?: string;
-          user_id?: string;
+          user_id?: string | null;
+          member_name?: string | null;
           assigned_at?: string;
         };
         Relationships: [

@@ -48,6 +48,7 @@ export function CollaborationCard({
 
   const [method, setMethod] = useState(contactMethod ?? "");
   const [memberToAdd, setMemberToAdd] = useState("");
+  const [newMemberName, setNewMemberName] = useState("");
   const [assigning, setAssigning] = useState(false);
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpNote, setFollowUpNote] = useState("");
@@ -82,6 +83,23 @@ export function CollaborationCard({
       return;
     }
     setMemberToAdd("");
+    router.refresh();
+  }
+
+  async function handleAddNamedMember() {
+    const name = newMemberName.trim();
+    if (!name) return;
+    setAssigning(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("company_team_members")
+      .insert({ company_id: companyId, member_name: name });
+    setAssigning(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setNewMemberName("");
     router.refresh();
   }
 
@@ -180,7 +198,9 @@ export function CollaborationCard({
             <div className="flex flex-wrap gap-2">
               {teamMembers.map((member) => (
                 <Badge key={member.id} variant="secondary" className="gap-1 pr-1">
-                  {profileById.get(member.user_id)?.full_name ?? "Unknown"}
+                  {member.user_id
+                    ? (profileById.get(member.user_id)?.full_name ?? "Unknown")
+                    : member.member_name}
                   <button
                     type="button"
                     onClick={() => handleUnassign(member.id)}
@@ -195,7 +215,7 @@ export function CollaborationCard({
           <div className="flex gap-2">
             <Select value={memberToAdd || undefined} onValueChange={setMemberToAdd}>
               <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Assign team member..." />
+                <SelectValue placeholder="Assign existing user..." />
               </SelectTrigger>
               <SelectContent>
                 {availableProfiles.map((p) => (
@@ -207,6 +227,28 @@ export function CollaborationCard({
             </Select>
             <Button size="sm" onClick={handleAssign} disabled={!memberToAdd || assigning}>
               Assign
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Add a team member by name..."
+              value={newMemberName}
+              onChange={(e) => setNewMemberName(e.target.value)}
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddNamedMember();
+                }
+              }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAddNamedMember}
+              disabled={!newMemberName.trim() || assigning}
+            >
+              Add
             </Button>
           </div>
         </div>
