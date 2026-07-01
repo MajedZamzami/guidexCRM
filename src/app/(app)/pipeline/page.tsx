@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPipelineStages, getProfiles } from "@/lib/data/reference";
 import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 
 export default async function PipelinePage() {
@@ -6,31 +7,29 @@ export default async function PipelinePage() {
 
   const [
     { data: companies },
-    { data: stages },
+    allStages,
     { data: contacts },
-    { data: profiles },
+    profiles,
     { data: interactions },
   ] = await Promise.all([
     supabase.from("companies").select("*").order("updated_at", { ascending: false }),
-    supabase
-      .from("pipeline_stages")
-      .select("*")
-      .eq("is_active", true)
-      .order("display_order"),
+    getPipelineStages(),
     supabase.from("contacts").select("id, company_id, name"),
-    supabase.from("profiles").select("*"),
+    getProfiles(),
     supabase
       .from("interactions")
       .select("id, company_id, type, occurred_at")
       .order("occurred_at", { ascending: false }),
   ]);
 
+  const stages = allStages.filter((s) => s.is_active);
+
   return (
     <PipelineBoard
       companies={companies ?? []}
-      stages={stages ?? []}
+      stages={stages}
       contacts={contacts ?? []}
-      profiles={profiles ?? []}
+      profiles={profiles}
       interactions={interactions ?? []}
     />
   );

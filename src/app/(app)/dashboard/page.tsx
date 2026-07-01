@@ -1,5 +1,6 @@
 import { Building2, AlertTriangle, TrendingUp, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getPipelineStages } from "@/lib/data/reference";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { StageFunnelChart } from "@/components/dashboard/stage-funnel-chart";
 import { RecentCompanies } from "@/components/dashboard/recent-companies";
@@ -8,13 +9,13 @@ import { formatCurrency } from "@/lib/format";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ data: companies }, { data: stages }] = await Promise.all([
+  const [{ data: companies }, stages] = await Promise.all([
     supabase.from("companies").select("*"),
-    supabase.from("pipeline_stages").select("*").order("display_order"),
+    getPipelineStages(),
   ]);
 
   const allCompanies = companies ?? [];
-  const allStages = stages ?? [];
+  const allStages = stages;
 
   const totalCompanies = allCompanies.length;
   const activeDeals = allCompanies.filter((c) => c.health_status === "active").length;
