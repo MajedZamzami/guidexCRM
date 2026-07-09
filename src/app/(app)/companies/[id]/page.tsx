@@ -14,6 +14,7 @@ export default async function CompanyDetailPage({
   const [
     { data: company },
     stages,
+    { data: projects },
     { data: contacts },
     { data: roles },
     { data: interactions },
@@ -25,6 +26,7 @@ export default async function CompanyDetailPage({
   ] = await Promise.all([
     supabase.from("companies").select("*").eq("id", id).single(),
     getPipelineStages(),
+    supabase.from("projects").select("*").eq("company_id", id).order("is_default", { ascending: false }),
     supabase.from("contacts").select("*").eq("company_id", id).order("is_primary", { ascending: false }),
     supabase.from("buying_committee_roles").select("*, contact:contacts(*)").eq("company_id", id),
     supabase
@@ -48,6 +50,7 @@ export default async function CompanyDetailPage({
     <CompanyDetailView
       company={company}
       stages={stages}
+      projects={projects ?? []}
       contacts={contacts ?? []}
       roles={roles ?? []}
       interactions={interactions ?? []}

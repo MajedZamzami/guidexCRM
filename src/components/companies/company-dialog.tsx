@@ -4,18 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { Company, HealthStatus, PipelineStage } from "@/lib/types/database";
+import type { Company } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -35,10 +28,6 @@ function toFormState(company?: Company | null) {
     city: company?.city ?? "",
     employee_count: company?.employee_count ?? "",
     business_overview: company?.business_overview ?? "",
-    stage_id: company?.stage_id ?? "",
-    health_status: (company?.health_status ?? "active") as HealthStatus,
-    deal_value: company?.deal_value?.toString() ?? "",
-    opportunity_score: company?.opportunity_score?.toString() ?? "",
   };
 }
 
@@ -47,12 +36,10 @@ type FormState = ReturnType<typeof toFormState>;
 export function CompanyDialog({
   open,
   onOpenChange,
-  stages,
   company,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  stages: PipelineStage[];
   company?: Company | null;
 }) {
   return (
@@ -61,7 +48,6 @@ export function CompanyDialog({
         {open && (
           <CompanyForm
             key={company?.id ?? "new"}
-            stages={stages}
             company={company}
             onOpenChange={onOpenChange}
           />
@@ -72,11 +58,9 @@ export function CompanyDialog({
 }
 
 function CompanyForm({
-  stages,
   company,
   onOpenChange,
 }: {
-  stages: PipelineStage[];
   company?: Company | null;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -106,10 +90,6 @@ function CompanyForm({
       city: form.city.trim() || null,
       employee_count: form.employee_count.trim() || null,
       business_overview: form.business_overview.trim() || null,
-      stage_id: form.stage_id || null,
-      health_status: form.health_status,
-      deal_value: form.deal_value ? Number(form.deal_value) : null,
-      opportunity_score: form.opportunity_score ? Number(form.opportunity_score) : null,
     };
 
     const { error } = isEdit
@@ -135,7 +115,7 @@ function CompanyForm({
         <DialogDescription>
           {isEdit
             ? "Update this company's details."
-            : "Add a new company to the CRM."}
+            : "Add a new company to the CRM. It gets a default project you can track through the pipeline."}
         </DialogDescription>
       </DialogHeader>
 
@@ -189,75 +169,14 @@ function CompanyForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="employee_count">Employees</Label>
-            <Input
-              id="employee_count"
-              value={form.employee_count}
-              onChange={(e) => update("employee_count", e.target.value)}
-              placeholder="e.g. 50-200"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="deal_value">Deal value (USD)</Label>
-            <Input
-              id="deal_value"
-              type="number"
-              min="0"
-              value={form.deal_value}
-              onChange={(e) => update("deal_value", e.target.value)}
-            />
-          </div>
-        </div>
-
         <div className="space-y-2">
-          <Label htmlFor="opportunity_score">Opportunity score (0-100)</Label>
+          <Label htmlFor="employee_count">Employees</Label>
           <Input
-            id="opportunity_score"
-            type="number"
-            min="0"
-            max="100"
-            value={form.opportunity_score}
-            onChange={(e) => update("opportunity_score", e.target.value)}
+            id="employee_count"
+            value={form.employee_count}
+            onChange={(e) => update("employee_count", e.target.value)}
+            placeholder="e.g. 50-200"
           />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Stage</Label>
-            <Select
-              value={form.stage_id || undefined}
-              onValueChange={(value) => update("stage_id", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="No stage" />
-              </SelectTrigger>
-              <SelectContent>
-                {stages.map((stage) => (
-                  <SelectItem key={stage.id} value={stage.id}>
-                    {stage.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Health</Label>
-            <Select
-              value={form.health_status}
-              onValueChange={(value) => update("health_status", value as HealthStatus)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="at_risk">At Risk</SelectItem>
-                <SelectItem value="cold">Cold</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="space-y-2">

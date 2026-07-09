@@ -16,6 +16,7 @@ import type {
   Interaction,
   PipelineStage,
   Profile,
+  Project,
 } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,14 +30,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { HealthBadge } from "@/components/health-badge";
 import { CompanyDialog } from "@/components/companies/company-dialog";
 import { PrimaryContactCard } from "@/components/company-detail/primary-contact-card";
 import { CommunicationTrackerCard } from "@/components/company-detail/communication-tracker-card";
 import { BuyingCommitteeCard } from "@/components/company-detail/buying-committee-card";
 import { CollaborationCard } from "@/components/company-detail/collaboration-card";
 import { FilesCard } from "@/components/company-detail/files-card";
-import { formatCurrency } from "@/lib/format";
+import { ProjectsCard } from "@/components/company-detail/projects-card";
 import { ArrowLeft, Pencil, Trash2, Globe, Link2, MapPin } from "lucide-react";
 
 type RoleWithContact = BuyingCommitteeRole & { contact: Contact | null };
@@ -45,6 +45,7 @@ type InteractionWithContact = Interaction & { contact: { name: string } | null }
 export function CompanyDetailView({
   company,
   stages,
+  projects,
   contacts,
   roles,
   interactions,
@@ -56,6 +57,7 @@ export function CompanyDetailView({
 }: {
   company: Company;
   stages: PipelineStage[];
+  projects: Project[];
   contacts: Contact[];
   roles: RoleWithContact[];
   interactions: InteractionWithContact[];
@@ -70,7 +72,6 @@ export function CompanyDetailView({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const stage = stages.find((s) => s.id === company.stage_id);
   const createdByProfile = profiles.find((p) => p.id === company.created_by);
 
   async function handleDelete() {
@@ -119,18 +120,6 @@ export function CompanyDetailView({
             <CardTitle className="text-base">Company Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              {stage && (
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs"
-                  style={{ borderColor: stage.color, color: stage.color }}
-                >
-                  <span className="size-1.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                  {stage.name}
-                </span>
-              )}
-              <HealthBadge status={company.health_status} />
-            </div>
             {company.country && (
               <p className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="size-4" />
@@ -159,20 +148,12 @@ export function CompanyDetailView({
                 LinkedIn
               </a>
             )}
-            <div className="grid grid-cols-2 gap-3 pt-1 text-muted-foreground">
-              {company.employee_count && (
-                <div>
-                  <p className="text-xs">Employees</p>
-                  <p className="text-foreground">{company.employee_count}</p>
-                </div>
-              )}
-              {company.deal_value !== null && (
-                <div>
-                  <p className="text-xs">Deal value</p>
-                  <p className="text-foreground">{formatCurrency(company.deal_value)}</p>
-                </div>
-              )}
-            </div>
+            {company.employee_count && (
+              <div className="pt-1 text-muted-foreground">
+                <p className="text-xs">Employees</p>
+                <p className="text-foreground">{company.employee_count}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -187,6 +168,8 @@ export function CompanyDetailView({
           </CardContent>
         </Card>
       </div>
+
+      <ProjectsCard companyId={company.id} projects={projects} stages={stages} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <PrimaryContactCard companyId={company.id} companyName={company.name} contacts={contacts} />
@@ -215,7 +198,7 @@ export function CompanyDetailView({
         comments={comments}
       />
 
-      <CompanyDialog open={editOpen} onOpenChange={setEditOpen} stages={stages} company={company} />
+      <CompanyDialog open={editOpen} onOpenChange={setEditOpen} company={company} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

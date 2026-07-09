@@ -65,14 +65,7 @@ export interface Database {
           city: string | null;
           employee_count: string | null;
           business_overview: string | null;
-          stage_id: string | null;
-          health_status: HealthStatus;
-          deal_value: number | null;
-          opportunity_score: number | null;
           contact_method: string | null;
-          last_activity_at: string | null;
-          next_action_due: string | null;
-          next_action_title: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -87,14 +80,7 @@ export interface Database {
           city?: string | null;
           employee_count?: string | null;
           business_overview?: string | null;
-          stage_id?: string | null;
-          health_status?: HealthStatus;
-          deal_value?: number | null;
-          opportunity_score?: number | null;
           contact_method?: string | null;
-          last_activity_at?: string | null;
-          next_action_due?: string | null;
-          next_action_title?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -109,11 +95,55 @@ export interface Database {
           city?: string | null;
           employee_count?: string | null;
           business_overview?: string | null;
+          contact_method?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      projects: {
+        Row: {
+          id: string;
+          company_id: string;
+          name: string;
+          is_default: boolean;
+          stage_id: string | null;
+          health_status: HealthStatus;
+          deal_value: number | null;
+          opportunity_score: number | null;
+          last_activity_at: string | null;
+          next_action_due: string | null;
+          next_action_title: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          name: string;
+          is_default?: boolean;
           stage_id?: string | null;
           health_status?: HealthStatus;
           deal_value?: number | null;
           opportunity_score?: number | null;
-          contact_method?: string | null;
+          last_activity_at?: string | null;
+          next_action_due?: string | null;
+          next_action_title?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          name?: string;
+          is_default?: boolean;
+          stage_id?: string | null;
+          health_status?: HealthStatus;
+          deal_value?: number | null;
+          opportunity_score?: number | null;
           last_activity_at?: string | null;
           next_action_due?: string | null;
           next_action_title?: string | null;
@@ -123,7 +153,14 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "companies_stage_id_fkey";
+            foreignKeyName: "projects_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "projects_stage_id_fkey";
             columns: ["stage_id"];
             isOneToOne: false;
             referencedRelation: "pipeline_stages";
@@ -420,6 +457,7 @@ export interface Database {
 }
 
 export type Company = Database["public"]["Tables"]["companies"]["Row"];
+export type Project = Database["public"]["Tables"]["projects"]["Row"];
 export type PipelineStage = Database["public"]["Tables"]["pipeline_stages"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Contact = Database["public"]["Tables"]["contacts"]["Row"];

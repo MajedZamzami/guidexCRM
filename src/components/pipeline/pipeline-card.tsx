@@ -1,8 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import type { Company } from "@/lib/types/database";
+import type { Project } from "@/lib/types/database";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { HealthBadge } from "@/components/health-badge";
@@ -19,20 +20,27 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function PipelineCard({
-  company,
+  project,
+  companyId,
+  companyName,
+  companyIndustry,
   contactCount,
   addedByName,
   lastActivityType,
   lastActivityAt,
 }: {
-  company: Company;
+  project: Project;
+  companyId: string;
+  companyName: string;
+  companyIndustry: string | null;
   contactCount: number;
   addedByName: string | null;
   lastActivityType: string | null;
   lastActivityAt: string | null;
 }) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: company.id });
+    useDraggable({ id: project.id });
 
   const style = transform
     ? { transform: CSS.Translate.toString(transform) }
@@ -44,6 +52,7 @@ export function PipelineCard({
       style={style}
       {...listeners}
       {...attributes}
+      onClick={() => router.push(`/companies/${companyId}/projects/${project.id}`)}
       className={`cursor-grab touch-none gap-2 border-border bg-card py-3 active:cursor-grabbing ${
         isDragging ? "opacity-50" : ""
       }`}
@@ -52,12 +61,22 @@ export function PipelineCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Building2 className="size-4 shrink-0 text-muted-foreground" />
-            <span className="truncate text-sm font-medium">{company.name}</span>
+            <span className="truncate text-sm font-medium">{project.name}</span>
           </div>
-          <HealthBadge status={company.health_status} />
+          <HealthBadge status={project.health_status} />
         </div>
-        {company.industry && (
-          <p className="truncate text-xs text-muted-foreground">{company.industry}</p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/companies/${companyId}`);
+          }}
+          className="truncate text-left text-xs text-primary hover:underline"
+        >
+          {companyName}
+        </button>
+        {companyIndustry && (
+          <p className="truncate text-xs text-muted-foreground">{companyIndustry}</p>
         )}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
@@ -71,13 +90,13 @@ export function PipelineCard({
             {TYPE_LABELS[lastActivityType ?? ""] ?? "Stage Change"} · {timeAgo(lastActivityAt)}
           </p>
         )}
-        {company.opportunity_score !== null && (
+        {project.opportunity_score !== null && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Opportunity</span>
-              <span>{company.opportunity_score}%</span>
+              <span>{project.opportunity_score}%</span>
             </div>
-            <Progress value={company.opportunity_score} className="h-1.5" />
+            <Progress value={project.opportunity_score} className="h-1.5" />
           </div>
         )}
       </CardContent>
