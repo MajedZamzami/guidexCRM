@@ -34,12 +34,12 @@ const ROLES: { value: CommitteeRole; label: string }[] = [
 export function AssignRoleDialog({
   open,
   onOpenChange,
-  companyId,
+  projectId,
   contacts,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
+  projectId: string;
   contacts: Contact[];
 }) {
   const router = useRouter();
@@ -56,7 +56,7 @@ export function AssignRoleDialog({
     setSaving(true);
     const supabase = createClient();
     const { error } = await supabase.from("buying_committee_roles").insert({
-      company_id: companyId,
+      project_id: projectId,
       contact_id: contactId,
       role,
     });

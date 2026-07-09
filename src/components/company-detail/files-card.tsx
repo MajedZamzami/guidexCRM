@@ -20,10 +20,10 @@ function formatSize(bytes: number | null) {
 const BUCKET = "company-files";
 
 export function FilesCard({
-  companyId,
+  projectId,
   files,
 }: {
-  companyId: string;
+  projectId: string;
   files: CompanyFile[];
 }) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export function FilesCard({
     if (!file) return;
     setUploading(true);
     const supabase = createClient();
-    const path = `${companyId}/${Date.now()}-${file.name}`;
+    const path = `${projectId}/${Date.now()}-${file.name}`;
 
     const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file);
     if (uploadError) {
@@ -50,7 +50,7 @@ export function FilesCard({
     } = await supabase.auth.getUser();
 
     const { error: insertError } = await supabase.from("files").insert({
-      company_id: companyId,
+      project_id: projectId,
       name: file.name,
       storage_path: path,
       size: file.size,
@@ -114,7 +114,7 @@ export function FilesCard({
           <div className="flex flex-col items-center gap-1 py-8 text-center">
             <p className="text-sm font-medium text-muted-foreground">No files uploaded yet</p>
             <p className="text-xs text-muted-foreground">
-              Upload quotations, proposals, or other documents for this company.
+              Upload quotations, proposals, or other documents for this project.
             </p>
           </div>
         ) : (

@@ -21,11 +21,11 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function CommunicationTrackerCard({
-  companyId,
+  projectId,
   contacts,
   interactions,
 }: {
-  companyId: string;
+  projectId: string;
   contacts: Contact[];
   interactions: InteractionWithContact[];
 }) {
@@ -79,7 +79,7 @@ export function CommunicationTrackerCard({
       <InteractionDialog
         open={open}
         onOpenChange={setOpen}
-        companyId={companyId}
+        projectId={projectId}
         contacts={contacts}
       />
     </Card>

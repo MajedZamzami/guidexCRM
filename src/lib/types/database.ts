@@ -65,7 +65,6 @@ export interface Database {
           city: string | null;
           employee_count: string | null;
           business_overview: string | null;
-          contact_method: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -80,7 +79,6 @@ export interface Database {
           city?: string | null;
           employee_count?: string | null;
           business_overview?: string | null;
-          contact_method?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -95,7 +93,6 @@ export interface Database {
           city?: string | null;
           employee_count?: string | null;
           business_overview?: string | null;
-          contact_method?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -112,6 +109,7 @@ export interface Database {
           health_status: HealthStatus;
           deal_value: number | null;
           opportunity_score: number | null;
+          contact_method: string | null;
           last_activity_at: string | null;
           next_action_due: string | null;
           next_action_title: string | null;
@@ -128,6 +126,7 @@ export interface Database {
           health_status?: HealthStatus;
           deal_value?: number | null;
           opportunity_score?: number | null;
+          contact_method?: string | null;
           last_activity_at?: string | null;
           next_action_due?: string | null;
           next_action_title?: string | null;
@@ -144,6 +143,7 @@ export interface Database {
           health_status?: HealthStatus;
           deal_value?: number | null;
           opportunity_score?: number | null;
+          contact_method?: string | null;
           last_activity_at?: string | null;
           next_action_due?: string | null;
           next_action_title?: string | null;
@@ -171,7 +171,7 @@ export interface Database {
       contacts: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           name: string;
           title: string | null;
           email: string | null;
@@ -183,7 +183,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           name: string;
           title?: string | null;
           email?: string | null;
@@ -195,7 +195,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           name?: string;
           title?: string | null;
           email?: string | null;
@@ -207,10 +207,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "contacts_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "contacts_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
@@ -218,7 +218,7 @@ export interface Database {
       buying_committee_roles: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           contact_id: string;
           role: CommitteeRole;
           notes: string | null;
@@ -226,7 +226,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           contact_id: string;
           role: CommitteeRole;
           notes?: string | null;
@@ -234,7 +234,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           contact_id?: string;
           role?: CommitteeRole;
           notes?: string | null;
@@ -242,10 +242,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "buying_committee_roles_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "buying_committee_roles_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
           {
@@ -260,7 +260,7 @@ export interface Database {
       interactions: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           contact_id: string | null;
           type: InteractionType;
           notes: string | null;
@@ -270,7 +270,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           contact_id?: string | null;
           type: InteractionType;
           notes?: string | null;
@@ -280,7 +280,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           contact_id?: string | null;
           type?: InteractionType;
           notes?: string | null;
@@ -290,10 +290,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "interactions_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "interactions_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
           {
@@ -308,31 +308,31 @@ export interface Database {
       company_team_members: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           user_id: string | null;
           member_name: string | null;
           assigned_at: string;
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           user_id?: string | null;
           member_name?: string | null;
           assigned_at?: string;
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           user_id?: string | null;
           member_name?: string | null;
           assigned_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "company_team_members_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "company_team_members_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
@@ -340,7 +340,7 @@ export interface Database {
       follow_ups: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           due_date: string;
           note: string | null;
           is_done: boolean;
@@ -349,7 +349,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           due_date: string;
           note?: string | null;
           is_done?: boolean;
@@ -358,7 +358,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           due_date?: string;
           note?: string | null;
           is_done?: boolean;
@@ -367,10 +367,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "follow_ups_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "follow_ups_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
@@ -378,31 +378,31 @@ export interface Database {
       comments: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           user_id: string | null;
           body: string;
           created_at: string;
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           user_id?: string | null;
           body: string;
           created_at?: string;
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           user_id?: string | null;
           body?: string;
           created_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "comments_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "comments_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
@@ -410,7 +410,7 @@ export interface Database {
       files: {
         Row: {
           id: string;
-          company_id: string;
+          project_id: string;
           name: string;
           storage_path: string;
           size: number | null;
@@ -420,7 +420,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          company_id: string;
+          project_id: string;
           name: string;
           storage_path: string;
           size?: number | null;
@@ -430,7 +430,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          company_id?: string;
+          project_id?: string;
           name?: string;
           storage_path?: string;
           size?: number | null;
@@ -440,10 +440,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "files_company_id_fkey";
-            columns: ["company_id"];
+            foreignKeyName: "files_project_id_fkey";
+            columns: ["project_id"];
             isOneToOne: false;
-            referencedRelation: "companies";
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];

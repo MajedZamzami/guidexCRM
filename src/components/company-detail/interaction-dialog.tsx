@@ -36,12 +36,12 @@ const TYPES: { value: InteractionType; label: string }[] = [
 export function InteractionDialog({
   open,
   onOpenChange,
-  companyId,
+  projectId,
   contacts,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
+  projectId: string;
   contacts: Contact[];
 }) {
   const router = useRouter();
@@ -55,7 +55,7 @@ export function InteractionDialog({
     setSaving(true);
     const supabase = createClient();
     const { error } = await supabase.from("interactions").insert({
-      company_id: companyId,
+      project_id: projectId,
       contact_id: contactId || null,
       type,
       notes: notes.trim() || null,

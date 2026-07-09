@@ -19,12 +19,12 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function BuyingCommitteeCard({
-  companyId,
+  projectId,
   companyName,
   contacts,
   roles,
 }: {
-  companyId: string;
+  projectId: string;
   companyName: string;
   contacts: Contact[];
   roles: RoleWithContact[];
@@ -71,7 +71,7 @@ export function BuyingCommitteeCard({
       <AssignRoleDialog
         open={open}
         onOpenChange={setOpen}
-        companyId={companyId}
+        projectId={projectId}
         contacts={contacts}
       />
     </Card>

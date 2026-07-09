@@ -39,8 +39,8 @@ export interface PipelineProjectRow {
   lastActivityAt: string | null;
 }
 
-type ContactRow = { id: string; company_id: string; name: string };
-type InteractionRow = { id: string; company_id: string; type: string; occurred_at: string };
+type ContactRow = { id: string; project_id: string; name: string };
+type InteractionRow = { id: string; project_id: string; type: string; occurred_at: string };
 
 export function PipelineBoard({
   companies,
@@ -70,19 +70,19 @@ export function PipelineBoard({
   const companyById = useMemo(() => new Map(companies.map((c) => [c.id, c])), [companies]);
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
 
-  const contactCountByCompany = useMemo(() => {
+  const contactCountByProject = useMemo(() => {
     const map = new Map<string, number>();
     for (const c of contacts) {
-      map.set(c.company_id, (map.get(c.company_id) ?? 0) + 1);
+      map.set(c.project_id, (map.get(c.project_id) ?? 0) + 1);
     }
     return map;
   }, [contacts]);
 
-  const latestInteractionByCompany = useMemo(() => {
+  const latestInteractionByProject = useMemo(() => {
     const map = new Map<string, InteractionRow>();
     for (const interaction of interactions) {
-      if (!map.has(interaction.company_id)) {
-        map.set(interaction.company_id, interaction);
+      if (!map.has(interaction.project_id)) {
+        map.set(interaction.project_id, interaction);
       }
     }
     return map;
@@ -128,13 +128,13 @@ export function PipelineBoard({
       if (!project.stage_id || !map.has(project.stage_id)) continue;
       const company = companyById.get(project.company_id);
       if (!company) continue;
-      const latest = latestInteractionByCompany.get(company.id);
+      const latest = latestInteractionByProject.get(project.id);
       map.get(project.stage_id)!.push({
         project,
         companyId: company.id,
         companyName: company.name,
         companyIndustry: company.industry,
-        contactCount: contactCountByCompany.get(company.id) ?? 0,
+        contactCount: contactCountByProject.get(project.id) ?? 0,
         addedByName: project.created_by
           ? (profileById.get(project.created_by)?.full_name ?? null)
           : null,
@@ -147,8 +147,8 @@ export function PipelineBoard({
     filteredProjects,
     stages,
     companyById,
-    contactCountByCompany,
-    latestInteractionByCompany,
+    contactCountByProject,
+    latestInteractionByProject,
     profileById,
   ]);
 
@@ -275,7 +275,7 @@ export function PipelineBoard({
 
       {view === "contacts" ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <ContactsList contacts={contacts} companies={filteredCompanies} />
+          <ContactsList contacts={contacts} projects={projects} companies={filteredCompanies} />
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -291,7 +291,7 @@ export function PipelineBoard({
                 companyId={activeCompany.id}
                 companyName={activeCompany.name}
                 companyIndustry={activeCompany.industry}
-                contactCount={contactCountByCompany.get(activeCompany.id) ?? 0}
+                contactCount={contactCountByProject.get(activeProject.id) ?? 0}
                 addedByName={null}
                 lastActivityType={null}
                 lastActivityAt={null}

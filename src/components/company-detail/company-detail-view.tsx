@@ -5,19 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type {
-  BuyingCommitteeRole,
-  Comment,
-  Company,
-  CompanyFile,
-  CompanyTeamMember,
-  Contact,
-  FollowUp,
-  Interaction,
-  PipelineStage,
-  Profile,
-  Project,
-} from "@/lib/types/database";
+import type { Company, PipelineStage, Project } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -31,48 +19,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CompanyDialog } from "@/components/companies/company-dialog";
-import { PrimaryContactCard } from "@/components/company-detail/primary-contact-card";
-import { CommunicationTrackerCard } from "@/components/company-detail/communication-tracker-card";
-import { BuyingCommitteeCard } from "@/components/company-detail/buying-committee-card";
-import { CollaborationCard } from "@/components/company-detail/collaboration-card";
-import { FilesCard } from "@/components/company-detail/files-card";
 import { ProjectsCard } from "@/components/company-detail/projects-card";
 import { ArrowLeft, Pencil, Trash2, Globe, Link2, MapPin } from "lucide-react";
-
-type RoleWithContact = BuyingCommitteeRole & { contact: Contact | null };
-type InteractionWithContact = Interaction & { contact: { name: string } | null };
 
 export function CompanyDetailView({
   company,
   stages,
   projects,
-  contacts,
-  roles,
-  interactions,
-  teamMembers,
-  profiles,
-  followUps,
-  comments,
-  files,
 }: {
   company: Company;
   stages: PipelineStage[];
   projects: Project[];
-  contacts: Contact[];
-  roles: RoleWithContact[];
-  interactions: InteractionWithContact[];
-  teamMembers: CompanyTeamMember[];
-  profiles: Profile[];
-  followUps: FollowUp[];
-  comments: Comment[];
-  files: CompanyFile[];
 }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const createdByProfile = profiles.find((p) => p.id === company.created_by);
 
   async function handleDelete() {
     setDeleting(true);
@@ -171,33 +133,6 @@ export function CompanyDetailView({
 
       <ProjectsCard companyId={company.id} projects={projects} stages={stages} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <PrimaryContactCard companyId={company.id} companyName={company.name} contacts={contacts} />
-        <CommunicationTrackerCard
-          companyId={company.id}
-          contacts={contacts}
-          interactions={interactions}
-        />
-        <BuyingCommitteeCard
-          companyId={company.id}
-          companyName={company.name}
-          contacts={contacts}
-          roles={roles}
-        />
-        <FilesCard companyId={company.id} files={files} />
-      </div>
-
-      <CollaborationCard
-        companyId={company.id}
-        createdAt={company.created_at}
-        createdByName={createdByProfile?.full_name ?? "Unknown"}
-        contactMethod={company.contact_method}
-        teamMembers={teamMembers}
-        profiles={profiles}
-        followUps={followUps}
-        comments={comments}
-      />
-
       <CompanyDialog open={editOpen} onOpenChange={setEditOpen} company={company} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
@@ -205,8 +140,8 @@ export function CompanyDetailView({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {company.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the company and all its contacts, interactions, and
-              files. This action cannot be undone.
+              This will permanently remove the company, its projects, and all their contacts,
+              interactions, and files. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
