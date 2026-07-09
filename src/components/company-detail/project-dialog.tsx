@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { HealthStatus, PipelineStage, Project } from "@/lib/types/database";
+import type { Company, HealthStatus, PipelineStage, Project } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ import { Loader2 } from "lucide-react";
 
 function toFormState(project?: Project | null, defaultStageId?: string) {
   return {
+    company_id: project?.company_id ?? "",
     name: project?.name ?? "",
     stage_id: project?.stage_id ?? defaultStageId ?? "",
     health_status: (project?.health_status ?? "active") as HealthStatus,
@@ -41,12 +42,14 @@ export function ProjectDialog({
   open,
   onOpenChange,
   companyId,
+  companies,
   stages,
   project,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
+  companyId?: string;
+  companies?: Company[];
   stages: PipelineStage[];
   project?: Project | null;
 }) {
@@ -57,6 +60,7 @@ export function ProjectDialog({
           <ProjectForm
             key={project?.id ?? "new"}
             companyId={companyId}
+            companies={companies}
             stages={stages}
             project={project}
             onOpenChange={onOpenChange}
@@ -69,19 +73,25 @@ export function ProjectDialog({
 
 function ProjectForm({
   companyId,
+  companies,
   stages,
   project,
   onOpenChange,
 }: {
-  companyId: string;
+  companyId?: string;
+  companies?: Company[];
   stages: PipelineStage[];
   project?: Project | null;
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(() => toFormState(project, stages[0]?.id));
+  const [form, setForm] = useState<FormState>(() => ({
+    ...toFormState(project, stages[0]?.id),
+    company_id: project?.company_id ?? companyId ?? "",
+  }));
   const [saving, setSaving] = useState(false);
   const isEdit = Boolean(project);
+  const needsCompanyPicker = !isEdit && !companyId;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -91,6 +101,10 @@ function ProjectForm({
     e.preventDefault();
     if (!form.name.trim()) {
       toast.error("Project name is required");
+      return;
+    }
+    if (needsCompanyPicker && !form.company_id) {
+      toast.error("Pick a company first");
       return;
     }
 
@@ -106,7 +120,9 @@ function ProjectForm({
 
     const { error } = isEdit
       ? await supabase.from("projects").update(payload).eq("id", project!.id)
-      : await supabase.from("projects").insert({ ...payload, company_id: companyId });
+      : await supabase
+          .from("projects")
+          .insert({ ...payload, company_id: companyId ?? form.company_id });
 
     setSaving(false);
 
@@ -127,11 +143,32 @@ function ProjectForm({
         <DialogDescription>
           {isEdit
             ? "Update this project's details."
-            : "Track another deal for this company through the pipeline."}
+            : "Track another deal through the pipeline."}
         </DialogDescription>
       </DialogHeader>
 
       <div className="grid gap-4 py-4">
+        {needsCompanyPicker && (
+          <div className="space-y-2">
+            <Label>Company</Label>
+            <Select
+              value={form.company_id || undefined}
+              onValueChange={(value) => update("company_id", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a company" />
+              </SelectTrigger>
+              <SelectContent>
+                {(companies ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
           <Input

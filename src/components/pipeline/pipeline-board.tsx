@@ -25,8 +25,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { CompanyDialog } from "@/components/companies/company-dialog";
-import { Heart, Flame, Snowflake, Search, Plus } from "lucide-react";
+import { ProjectDialog } from "@/components/company-detail/project-dialog";
+import { Search, Plus } from "lucide-react";
 
 export interface PipelineProjectRow {
   project: Project;
@@ -63,6 +70,7 @@ export function PipelineBoard({
   const [industry, setIndustry] = useState("all");
   const [view, setView] = useState<"deals" | "contacts">("deals");
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
+  const [addProjectOpen, setAddProjectOpen] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
@@ -157,15 +165,6 @@ export function PipelineBoard({
     : null;
   const activeCompany = activeProject ? companyById.get(activeProject.company_id) : null;
 
-  const summary = useMemo(
-    () => ({
-      total: projects.length,
-      atRisk: projects.filter((p) => p.health_status === "at_risk").length,
-      cold: projects.filter((p) => p.health_status === "cold").length,
-    }),
-    [projects],
-  );
-
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
   }
@@ -209,20 +208,6 @@ export function PipelineBoard({
           <p className="text-sm text-muted-foreground">Company-first view with nested contacts</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Heart className="size-4 text-destructive" />
-              {summary.total}
-            </span>
-            <span className="flex items-center gap-1">
-              <Flame className="size-4 text-warning" />
-              {summary.atRisk}
-            </span>
-            <span className="flex items-center gap-1">
-              <Snowflake className="size-4 text-primary" />
-              {summary.cold}
-            </span>
-          </div>
           <div className="flex rounded-md border border-border p-0.5">
             <Button
               size="sm"
@@ -241,10 +226,22 @@ export function PipelineBoard({
               Contacts
             </Button>
           </div>
-          <Button size="sm" onClick={() => setAddCompanyOpen(true)}>
-            <Plus className="size-4" />
-            Add Company
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm">
+                <Plus className="size-4" />
+                Add
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setAddCompanyOpen(true)}>
+                Company
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAddProjectOpen(true)}>
+                Project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -302,6 +299,12 @@ export function PipelineBoard({
       )}
 
       <CompanyDialog open={addCompanyOpen} onOpenChange={setAddCompanyOpen} />
+      <ProjectDialog
+        open={addProjectOpen}
+        onOpenChange={setAddProjectOpen}
+        companies={companies}
+        stages={stages}
+      />
     </div>
   );
 }
