@@ -52,8 +52,7 @@ export function PipelineCard({
       style={style}
       {...listeners}
       {...attributes}
-      onClick={() => router.push(`/companies/${companyId}/projects/${project.id}`)}
-      className={`cursor-grab touch-none gap-2 border-border bg-card py-3 active:cursor-grabbing ${
+      className={`shrink-0 cursor-grab touch-none gap-2 border-border bg-card py-3 active:cursor-grabbing ${
         isDragging ? "opacity-50" : ""
       }`}
     >
@@ -61,7 +60,16 @@ export function PipelineCard({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Building2 className="size-4 shrink-0 text-muted-foreground" />
-            <span className="truncate text-sm font-medium">{project.name}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/companies/${companyId}/projects/${project.id}`);
+              }}
+              className="truncate text-left text-sm font-medium hover:underline"
+            >
+              {project.name}
+            </button>
           </div>
           <HealthBadge status={project.health_status} />
         </div>
