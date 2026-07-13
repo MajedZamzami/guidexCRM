@@ -30,14 +30,14 @@ function toFormState(contact?: Contact | null) {
 export function ContactDialog({
   open,
   onOpenChange,
-  projectId,
+  companyId,
   companyName,
   contact,
   makePrimary,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string;
+  companyId: string;
   companyName: string;
   contact?: Contact | null;
   makePrimary?: boolean;
@@ -48,7 +48,7 @@ export function ContactDialog({
         {open && (
           <ContactForm
             key={contact?.id ?? "new"}
-            projectId={projectId}
+            companyId={companyId}
             companyName={companyName}
             contact={contact}
             makePrimary={makePrimary}
@@ -61,13 +61,13 @@ export function ContactDialog({
 }
 
 function ContactForm({
-  projectId,
+  companyId,
   companyName,
   contact,
   makePrimary,
   onOpenChange,
 }: {
-  projectId: string;
+  companyId: string;
   companyName: string;
   contact?: Contact | null;
   makePrimary?: boolean;
@@ -92,7 +92,7 @@ function ContactForm({
     setSaving(true);
     const supabase = createClient();
     const payload = {
-      project_id: projectId,
+      company_id: companyId,
       name: form.name.trim(),
       title: form.title.trim() || null,
       email: form.email.trim() || null,

@@ -7,20 +7,18 @@ export default async function PipelinePage() {
 
   const [
     { data: companies },
-    { data: projects },
     allStages,
     { data: contacts },
     profiles,
     { data: interactions },
   ] = await Promise.all([
     supabase.from("companies").select("*").order("updated_at", { ascending: false }),
-    supabase.from("projects").select("*"),
     getPipelineStages(),
-    supabase.from("contacts").select("id, project_id, name"),
+    supabase.from("contacts").select("id, company_id, name"),
     getProfiles(),
     supabase
       .from("interactions")
-      .select("id, project_id, type, occurred_at")
+      .select("id, company_id, type, occurred_at")
       .order("occurred_at", { ascending: false }),
   ]);
 
@@ -29,7 +27,6 @@ export default async function PipelinePage() {
   return (
     <PipelineBoard
       companies={companies ?? []}
-      projects={projects ?? []}
       stages={stages}
       contacts={contacts ?? []}
       profiles={profiles}

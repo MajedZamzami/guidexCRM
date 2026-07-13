@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { Company, PipelineStage, Profile, Project } from "@/lib/types/database";
+import type { Company, PipelineStage, Profile } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -74,12 +74,10 @@ type ViewMode = "grid" | "list";
 
 export function CompaniesView({
   companies,
-  defaultProjects,
   stages,
   profiles,
 }: {
   companies: Company[];
-  defaultProjects: Project[];
   stages: PipelineStage[];
   profiles: Profile[];
 }) {
@@ -102,11 +100,6 @@ export function CompaniesView({
   const profileById = useMemo(
     () => new Map(profiles.map((p) => [p.id, p])),
     [profiles],
-  );
-
-  const defaultProjectByCompany = useMemo(
-    () => new Map(defaultProjects.map((p) => [p.company_id, p])),
-    [defaultProjects],
   );
 
   const industries = useMemo(() => {
@@ -391,10 +384,7 @@ export function CompaniesView({
             </TableHeader>
             <TableBody>
               {filtered.map((company) => {
-                const defaultProject = defaultProjectByCompany.get(company.id);
-                const stage = defaultProject?.stage_id
-                  ? stageById.get(defaultProject.stage_id)
-                  : undefined;
+                const stage = company.stage_id ? stageById.get(company.stage_id) : undefined;
                 return (
                   <TableRow
                     key={company.id}
@@ -421,14 +411,10 @@ export function CompaniesView({
                       )}
                     </TableCell>
                     <TableCell>
-                      {defaultProject ? (
-                        <HealthBadge status={defaultProject.health_status} />
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
+                      <HealthBadge status={company.health_status} />
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {formatCurrency(defaultProject?.deal_value ?? null)}
+                      {formatCurrency(company.deal_value)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(company.updated_at)}
@@ -464,6 +450,7 @@ export function CompaniesView({
       <CompanyDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        stages={stages}
         company={editing}
       />
 

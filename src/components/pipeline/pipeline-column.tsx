@@ -3,14 +3,14 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { PipelineStage } from "@/lib/types/database";
 import { PipelineCard } from "@/components/pipeline/pipeline-card";
-import type { PipelineProjectRow } from "@/components/pipeline/pipeline-board";
+import type { PipelineCompanyRow } from "@/components/pipeline/pipeline-board";
 
 export function PipelineColumn({
   stage,
   rows,
 }: {
   stage: PipelineStage;
-  rows: PipelineProjectRow[];
+  rows: PipelineCompanyRow[];
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
@@ -34,11 +34,8 @@ export function PipelineColumn({
       >
         {rows.map((row) => (
           <PipelineCard
-            key={row.project.id}
-            project={row.project}
-            companyId={row.companyId}
-            companyName={row.companyName}
-            companyIndustry={row.companyIndustry}
+            key={row.company.id}
+            company={row.company}
             contactCount={row.contactCount}
             addedByName={row.addedByName}
             lastActivityType={row.lastActivityType}

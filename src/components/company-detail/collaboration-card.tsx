@@ -25,7 +25,7 @@ import { formatDate, timeAgo } from "@/lib/format";
 const CONTACT_METHODS = ["Email", "Phone", "WhatsApp", "In Person", "Other"];
 
 export function CollaborationCard({
-  projectId,
+  companyId,
   createdAt,
   createdByName,
   contactMethod,
@@ -34,7 +34,7 @@ export function CollaborationCard({
   followUps,
   comments,
 }: {
-  projectId: string;
+  companyId: string;
   createdAt: string;
   createdByName: string;
   contactMethod: string | null;
@@ -63,9 +63,9 @@ export function CollaborationCard({
     setMethod(value);
     const supabase = createClient();
     const { error } = await supabase
-      .from("projects")
+      .from("companies")
       .update({ contact_method: value })
-      .eq("id", projectId);
+      .eq("id", companyId);
     if (error) toast.error(error.message);
     else router.refresh();
   }
@@ -76,7 +76,7 @@ export function CollaborationCard({
     const supabase = createClient();
     const { error } = await supabase
       .from("company_team_members")
-      .insert({ project_id: projectId, user_id: memberToAdd });
+      .insert({ company_id: companyId, user_id: memberToAdd });
     setAssigning(false);
     if (error) {
       toast.error(error.message);
@@ -93,7 +93,7 @@ export function CollaborationCard({
     const supabase = createClient();
     const { error } = await supabase
       .from("company_team_members")
-      .insert({ project_id: projectId, member_name: name });
+      .insert({ company_id: companyId, member_name: name });
     setAssigning(false);
     if (error) {
       toast.error(error.message);
@@ -118,7 +118,7 @@ export function CollaborationCard({
     setAddingFollowUp(true);
     const supabase = createClient();
     const { error } = await supabase.from("follow_ups").insert({
-      project_id: projectId,
+      company_id: companyId,
       due_date: followUpDate,
       note: followUpNote.trim() || null,
     });
@@ -147,7 +147,7 @@ export function CollaborationCard({
       data: { user },
     } = await supabase.auth.getUser();
     const { error } = await supabase.from("comments").insert({
-      project_id: projectId,
+      company_id: companyId,
       user_id: user?.id ?? null,
       body: commentBody.trim(),
     });

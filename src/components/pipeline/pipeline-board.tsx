@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { Company, PipelineStage, Profile, Project } from "@/lib/types/database";
+import type { Company, PipelineStage, Profile } from "@/lib/types/database";
 import { PipelineColumn } from "@/components/pipeline/pipeline-column";
 import { PipelineCard } from "@/components/pipeline/pipeline-card";
 import { ContactsList } from "@/components/pipeline/contacts-list";
@@ -25,72 +25,58 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CompanyDialog } from "@/components/companies/company-dialog";
-import { ProjectDialog } from "@/components/company-detail/project-dialog";
 import { Search, Plus } from "lucide-react";
 
-export interface PipelineProjectRow {
-  project: Project;
-  companyId: string;
-  companyName: string;
-  companyIndustry: string | null;
+export interface PipelineCompanyRow {
+  company: Company;
   contactCount: number;
   addedByName: string | null;
   lastActivityType: string | null;
   lastActivityAt: string | null;
 }
 
-type ContactRow = { id: string; project_id: string; name: string };
-type InteractionRow = { id: string; project_id: string; type: string; occurred_at: string };
+type ContactRow = { id: string; company_id: string; name: string };
+type InteractionRow = { id: string; company_id: string; type: string; occurred_at: string };
 
 export function PipelineBoard({
-  companies,
-  projects: initialProjects,
+  companies: initialCompanies,
   stages,
   contacts,
   profiles,
   interactions,
 }: {
   companies: Company[];
-  projects: Project[];
   stages: PipelineStage[];
   contacts: ContactRow[];
   profiles: Profile[];
   interactions: InteractionRow[];
 }) {
-  const [projects, setProjects] = useState(initialProjects);
+  const [companies, setCompanies] = useState(initialCompanies);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [industry, setIndustry] = useState("all");
-  const [view, setView] = useState<"deals" | "contacts">("deals");
+  const [view, setView] = useState<"companies" | "contacts">("companies");
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
-  const [addProjectOpen, setAddProjectOpen] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
-  const companyById = useMemo(() => new Map(companies.map((c) => [c.id, c])), [companies]);
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
 
-  const contactCountByProject = useMemo(() => {
+  const contactCountByCompany = useMemo(() => {
     const map = new Map<string, number>();
     for (const c of contacts) {
-      map.set(c.project_id, (map.get(c.project_id) ?? 0) + 1);
+      map.set(c.company_id, (map.get(c.company_id) ?? 0) + 1);
     }
     return map;
   }, [contacts]);
 
-  const latestInteractionByProject = useMemo(() => {
+  const latestInteractionByCompany = useMemo(() => {
     const map = new Map<string, InteractionRow>();
     for (const interaction of interactions) {
-      if (!map.has(interaction.project_id)) {
-        map.set(interaction.project_id, interaction);
+      if (!map.has(interaction.company_id)) {
+        map.set(interaction.company_id, interaction);
       }
     }
     return map;
@@ -114,56 +100,28 @@ export function PipelineBoard({
     });
   }, [companies, search, industry]);
 
-  const filteredProjects = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return projects.filter((project) => {
-      const company = companyById.get(project.company_id);
-      if (industry !== "all" && company?.industry !== industry) return false;
-      if (!q) return true;
-      return (
-        project.name.toLowerCase().includes(q) ||
-        company?.name.toLowerCase().includes(q) ||
-        company?.industry?.toLowerCase().includes(q) ||
-        company?.country?.toLowerCase().includes(q)
-      );
-    });
-  }, [projects, companyById, search, industry]);
-
   const rowsByStage = useMemo(() => {
-    const map = new Map<string, PipelineProjectRow[]>();
+    const map = new Map<string, PipelineCompanyRow[]>();
     for (const stage of stages) map.set(stage.id, []);
-    for (const project of filteredProjects) {
-      if (!project.stage_id || !map.has(project.stage_id)) continue;
-      const company = companyById.get(project.company_id);
-      if (!company) continue;
-      const latest = latestInteractionByProject.get(project.id);
-      map.get(project.stage_id)!.push({
-        project,
-        companyId: company.id,
-        companyName: company.name,
-        companyIndustry: company.industry,
-        contactCount: contactCountByProject.get(project.id) ?? 0,
-        addedByName: project.created_by
-          ? (profileById.get(project.created_by)?.full_name ?? null)
+    for (const company of filteredCompanies) {
+      if (!company.stage_id || !map.has(company.stage_id)) continue;
+      const latest = latestInteractionByCompany.get(company.id);
+      map.get(company.stage_id)!.push({
+        company,
+        contactCount: contactCountByCompany.get(company.id) ?? 0,
+        addedByName: company.created_by
+          ? (profileById.get(company.created_by)?.full_name ?? null)
           : null,
         lastActivityType: latest?.type ?? null,
-        lastActivityAt: latest?.occurred_at ?? project.last_activity_at,
+        lastActivityAt: latest?.occurred_at ?? company.last_activity_at,
       });
     }
     return map;
-  }, [
-    filteredProjects,
-    stages,
-    companyById,
-    contactCountByProject,
-    latestInteractionByProject,
-    profileById,
-  ]);
+  }, [filteredCompanies, stages, contactCountByCompany, latestInteractionByCompany, profileById]);
 
-  const activeProject = activeId
-    ? (projects.find((p) => p.id === activeId) ?? null)
+  const activeCompany = activeId
+    ? (companies.find((c) => c.id === activeId) ?? null)
     : null;
-  const activeCompany = activeProject ? companyById.get(activeProject.company_id) : null;
 
   function handleDragStart(event: DragStartEvent) {
     setActiveId(String(event.active.id));
@@ -174,27 +132,27 @@ export function PipelineBoard({
     const { active, over } = event;
     if (!over) return;
 
-    const projectId = String(active.id);
+    const companyId = String(active.id);
     const newStageId = String(over.id);
-    const project = projects.find((p) => p.id === projectId);
-    if (!project || project.stage_id === newStageId) return;
+    const company = companies.find((c) => c.id === companyId);
+    if (!company || company.stage_id === newStageId) return;
 
-    const previousStageId = project.stage_id;
-    setProjects((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, stage_id: newStageId } : p)),
+    const previousStageId = company.stage_id;
+    setCompanies((prev) =>
+      prev.map((c) => (c.id === companyId ? { ...c, stage_id: newStageId } : c)),
     );
 
     const supabase = createClient();
     const { error } = await supabase
-      .from("projects")
+      .from("companies")
       .update({ stage_id: newStageId, last_activity_at: new Date().toISOString() })
-      .eq("id", projectId);
+      .eq("id", companyId);
 
     if (error) {
       toast.error(error.message);
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.id === projectId ? { ...p, stage_id: previousStageId } : p,
+      setCompanies((prev) =>
+        prev.map((c) =>
+          c.id === companyId ? { ...c, stage_id: previousStageId } : c,
         ),
       );
     }
@@ -211,11 +169,11 @@ export function PipelineBoard({
           <div className="flex rounded-md border border-border p-0.5">
             <Button
               size="sm"
-              variant={view === "deals" ? "secondary" : "ghost"}
+              variant={view === "companies" ? "secondary" : "ghost"}
               className="h-7"
-              onClick={() => setView("deals")}
+              onClick={() => setView("companies")}
             >
-              Deals
+              Companies
             </Button>
             <Button
               size="sm"
@@ -226,22 +184,10 @@ export function PipelineBoard({
               Contacts
             </Button>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm">
-                <Plus className="size-4" />
-                Add
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setAddCompanyOpen(true)}>
-                Company
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setAddProjectOpen(true)}>
-                Project
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button size="sm" onClick={() => setAddCompanyOpen(true)}>
+            <Plus className="size-4" />
+            Add Company
+          </Button>
         </div>
       </div>
 
@@ -272,7 +218,7 @@ export function PipelineBoard({
 
       {view === "contacts" ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <ContactsList contacts={contacts} projects={projects} companies={filteredCompanies} />
+          <ContactsList contacts={contacts} companies={filteredCompanies} />
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -282,13 +228,10 @@ export function PipelineBoard({
             ))}
           </div>
           <DragOverlay>
-            {activeProject && activeCompany ? (
+            {activeCompany ? (
               <PipelineCard
-                project={activeProject}
-                companyId={activeCompany.id}
-                companyName={activeCompany.name}
-                companyIndustry={activeCompany.industry}
-                contactCount={contactCountByProject.get(activeProject.id) ?? 0}
+                company={activeCompany}
+                contactCount={contactCountByCompany.get(activeCompany.id) ?? 0}
                 addedByName={null}
                 lastActivityType={null}
                 lastActivityAt={null}
@@ -298,13 +241,7 @@ export function PipelineBoard({
         </DndContext>
       )}
 
-      <CompanyDialog open={addCompanyOpen} onOpenChange={setAddCompanyOpen} />
-      <ProjectDialog
-        open={addProjectOpen}
-        onOpenChange={setAddProjectOpen}
-        companies={companies}
-        stages={stages}
-      />
+      <CompanyDialog open={addCompanyOpen} onOpenChange={setAddCompanyOpen} stages={stages} />
     </div>
   );
 }

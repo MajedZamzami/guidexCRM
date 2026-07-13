@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { ContactDialog } from "@/components/company-detail/contact-dialog";
 
 export function PrimaryContactCard({
-  projectId,
+  companyId,
   companyName,
   contacts,
 }: {
-  projectId: string;
+  companyId: string;
   companyName: string;
   contacts: Contact[];
 }) {
@@ -80,7 +80,7 @@ export function PrimaryContactCard({
       <ContactDialog
         open={open}
         onOpenChange={setOpen}
-        projectId={projectId}
+        companyId={companyId}
         companyName={companyName}
         makePrimary={!primary}
       />

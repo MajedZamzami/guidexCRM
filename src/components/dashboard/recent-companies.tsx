@@ -1,14 +1,14 @@
 import Link from "next/link";
-import type { Company, PipelineStage, Project } from "@/lib/types/database";
+import type { Company, PipelineStage } from "@/lib/types/database";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HealthBadge } from "@/components/health-badge";
 import { timeAgo } from "@/lib/format";
 
 export function RecentCompanies({
-  items,
+  companies,
   stages,
 }: {
-  items: { company: Company; project: Project | null }[];
+  companies: Company[];
   stages: PipelineStage[];
 }) {
   const stageById = new Map(stages.map((s) => [s.id, s]));
@@ -22,13 +22,13 @@ export function RecentCompanies({
         </Link>
       </CardHeader>
       <CardContent className="space-y-1">
-        {items.length === 0 && (
+        {companies.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">
             No companies yet.
           </p>
         )}
-        {items.map(({ company, project }) => {
-          const stage = project?.stage_id ? stageById.get(project.stage_id) : undefined;
+        {companies.map((company) => {
+          const stage = company.stage_id ? stageById.get(company.stage_id) : undefined;
           return (
             <div
               key={company.id}
@@ -40,7 +40,7 @@ export function RecentCompanies({
                   {stage?.name ?? "No stage"} · {timeAgo(company.updated_at)}
                 </p>
               </div>
-              {project && <HealthBadge status={project.health_status} />}
+              <HealthBadge status={company.health_status} />
             </div>
           );
         })}
