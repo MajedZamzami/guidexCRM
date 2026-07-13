@@ -3,12 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import type { Company } from "@/lib/types/database";
+import type { Company, HealthStatus } from "@/lib/types/database";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { HealthBadge } from "@/components/health-badge";
 import { timeAgo } from "@/lib/format";
-import { Building2, Users } from "lucide-react";
+import { Building2, History, User, Users } from "lucide-react";
 
 const TYPE_LABELS: Record<string, string> = {
   call: "Call",
@@ -18,6 +17,18 @@ const TYPE_LABELS: Record<string, string> = {
   note: "Note",
   other: "Activity",
 };
+
+const BORDER_BY_HEALTH: Record<HealthStatus, string> = {
+  active: "border-l-success",
+  at_risk: "border-l-warning",
+  cold: "border-l-muted-foreground/40",
+};
+
+function scoreColor(score: number) {
+  if (score < 40) return "bg-destructive";
+  if (score < 70) return "bg-warning";
+  return "bg-success";
+}
 
 export function PipelineCard({
   company,
@@ -46,49 +57,59 @@ export function PipelineCard({
       style={style}
       {...listeners}
       {...attributes}
-      className={`shrink-0 cursor-grab touch-none gap-2 border-border bg-card py-3 active:cursor-grabbing ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`shrink-0 cursor-grab touch-none gap-1.5 rounded-lg border-l-4 border-border bg-card py-3 active:cursor-grabbing ${
+        BORDER_BY_HEALTH[company.health_status]
+      } ${isDragging ? "opacity-50" : ""}`}
     >
-      <CardContent className="space-y-2 px-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Building2 className="size-4 shrink-0 text-muted-foreground" />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/companies/${company.id}`);
-              }}
-              className="truncate text-left text-sm font-medium hover:underline"
-            >
-              {company.name}
-            </button>
-          </div>
-          <HealthBadge status={company.health_status} />
+      <CardContent className="space-y-1.5 px-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Building2 className="size-4 shrink-0 text-muted-foreground" />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/companies/${company.id}`);
+            }}
+            className="truncate text-left text-sm font-medium hover:underline"
+          >
+            {company.name}
+          </button>
         </div>
+
         {company.industry && (
           <p className="truncate text-xs text-muted-foreground">{company.industry}</p>
         )}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Users className="size-3.5" />
-            {contactCount}
-          </span>
-          {addedByName && <span className="truncate">Added by {addedByName}</span>}
+
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Users className="size-3.5 shrink-0" />
+          {contactCount}
         </div>
-        {lastActivityAt && (
-          <p className="text-xs text-muted-foreground">
-            {TYPE_LABELS[lastActivityType ?? ""] ?? "Stage Change"} · {timeAgo(lastActivityAt)}
-          </p>
+
+        {addedByName && (
+          <div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+            <User className="size-3.5 shrink-0" />
+            Added by <span className="text-foreground">{addedByName}</span>
+          </div>
         )}
+
+        {lastActivityAt && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <History className="size-3.5 shrink-0" />
+            {TYPE_LABELS[lastActivityType ?? ""] ?? "Stage Change"} · {timeAgo(lastActivityAt)}
+          </div>
+        )}
+
         {company.opportunity_score !== null && (
-          <div className="space-y-1">
+          <div className="space-y-1 pt-0.5">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Opportunity</span>
               <span>{company.opportunity_score}%</span>
             </div>
-            <Progress value={company.opportunity_score} className="h-1.5" />
+            <Progress
+              value={company.opportunity_score}
+              className="h-1.5"
+              indicatorClassName={scoreColor(company.opportunity_score)}
+            />
           </div>
         )}
       </CardContent>

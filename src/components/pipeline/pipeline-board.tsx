@@ -222,7 +222,7 @@ export function PipelineBoard({
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-4">
+          <div className="scrollbar-thin flex min-h-0 flex-1 gap-3 overflow-x-auto pb-4">
             {stages.map((stage) => (
               <PipelineColumn key={stage.id} stage={stage} rows={rowsByStage.get(stage.id) ?? []} />
             ))}

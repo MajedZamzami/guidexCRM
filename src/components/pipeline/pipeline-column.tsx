@@ -28,7 +28,7 @@ export function PipelineColumn({
       </div>
       <div
         ref={setNodeRef}
-        className={`flex flex-1 min-h-0 flex-col gap-2 overflow-y-auto px-2 pb-2 transition-colors ${
+        className={`scrollbar-thin flex flex-1 min-h-0 flex-col gap-2 overflow-y-auto px-2 pb-2 transition-colors ${
           isOver ? "bg-primary/5" : ""
         }`}
       >
