@@ -215,7 +215,13 @@ export function CompanyDetailView({
         comments={comments}
       />
 
-      <CompanyDialog open={editOpen} onOpenChange={setEditOpen} stages={stages} company={company} />
+      <CompanyDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        stages={stages}
+        profiles={profiles}
+        company={company}
+      />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

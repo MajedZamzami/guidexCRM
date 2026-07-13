@@ -73,6 +73,7 @@ export interface Database {
           last_activity_at: string | null;
           next_action_due: string | null;
           next_action_title: string | null;
+          door_opener_id: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -95,6 +96,7 @@ export interface Database {
           last_activity_at?: string | null;
           next_action_due?: string | null;
           next_action_title?: string | null;
+          door_opener_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -117,6 +119,7 @@ export interface Database {
           last_activity_at?: string | null;
           next_action_due?: string | null;
           next_action_title?: string | null;
+          door_opener_id?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -127,6 +130,13 @@ export interface Database {
             columns: ["stage_id"];
             isOneToOne: false;
             referencedRelation: "pipeline_stages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "companies_door_opener_id_fkey";
+            columns: ["door_opener_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];

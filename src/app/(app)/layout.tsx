@@ -18,9 +18,15 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar isAdmin={profile?.role === "admin"} />
       <SidebarInset>
         <AppHeader email={user.email ?? ""} />
         <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-6">{children}</main>

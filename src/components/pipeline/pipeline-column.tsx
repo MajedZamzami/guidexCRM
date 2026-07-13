@@ -38,6 +38,7 @@ export function PipelineColumn({
             company={row.company}
             contactCount={row.contactCount}
             addedByName={row.addedByName}
+            doorOpenerName={row.doorOpenerName}
             lastActivityType={row.lastActivityType}
             lastActivityAt={row.lastActivityAt}
           />

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import type { Company, HealthStatus, PipelineStage } from "@/lib/types/database";
+import type { Company, HealthStatus, PipelineStage, Profile } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
-function toFormState(company?: Company | null) {
+function toFormState(company: Company | null | undefined, defaultStageId: string) {
   return {
     name: company?.name ?? "",
     website: company?.website ?? "",
@@ -35,10 +35,10 @@ function toFormState(company?: Company | null) {
     city: company?.city ?? "",
     employee_count: company?.employee_count ?? "",
     business_overview: company?.business_overview ?? "",
-    stage_id: company?.stage_id ?? "",
+    stage_id: company?.stage_id ?? defaultStageId,
     health_status: (company?.health_status ?? "active") as HealthStatus,
     deal_value: company?.deal_value?.toString() ?? "",
-    opportunity_score: company?.opportunity_score?.toString() ?? "",
+    door_opener_id: company?.door_opener_id ?? "",
   };
 }
 
@@ -48,11 +48,13 @@ export function CompanyDialog({
   open,
   onOpenChange,
   stages,
+  profiles,
   company,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   stages: PipelineStage[];
+  profiles: Profile[];
   company?: Company | null;
 }) {
   return (
@@ -62,6 +64,7 @@ export function CompanyDialog({
           <CompanyForm
             key={company?.id ?? "new"}
             stages={stages}
+            profiles={profiles}
             company={company}
             onOpenChange={onOpenChange}
           />
@@ -73,15 +76,18 @@ export function CompanyDialog({
 
 function CompanyForm({
   stages,
+  profiles,
   company,
   onOpenChange,
 }: {
   stages: PipelineStage[];
+  profiles: Profile[];
   company?: Company | null;
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(() => toFormState(company));
+  const defaultStageId = [...stages].sort((a, b) => a.display_order - b.display_order)[0]?.id ?? "";
+  const [form, setForm] = useState<FormState>(() => toFormState(company, defaultStageId));
   const [saving, setSaving] = useState(false);
   const isEdit = Boolean(company);
 
@@ -109,12 +115,20 @@ function CompanyForm({
       stage_id: form.stage_id || null,
       health_status: form.health_status,
       deal_value: form.deal_value ? Number(form.deal_value) : null,
-      opportunity_score: form.opportunity_score ? Number(form.opportunity_score) : null,
+      door_opener_id: form.door_opener_id || null,
     };
 
-    const { error } = isEdit
-      ? await supabase.from("companies").update(payload).eq("id", company!.id)
-      : await supabase.from("companies").insert(payload);
+    let error;
+    if (isEdit) {
+      ({ error } = await supabase.from("companies").update(payload).eq("id", company!.id));
+    } else {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      ({ error } = await supabase
+        .from("companies")
+        .insert({ ...payload, created_by: user?.id ?? null }));
+    }
 
     setSaving(false);
 
@@ -211,18 +225,6 @@ function CompanyForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="opportunity_score">Opportunity score (0-100)</Label>
-          <Input
-            id="opportunity_score"
-            type="number"
-            min="0"
-            max="100"
-            value={form.opportunity_score}
-            onChange={(e) => update("opportunity_score", e.target.value)}
-          />
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Stage</Label>
@@ -258,6 +260,25 @@ function CompanyForm({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Door opener</Label>
+          <Select
+            value={form.door_opener_id || undefined}
+            onValueChange={(value) => update("door_opener_id", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="No door opener" />
+            </SelectTrigger>
+            <SelectContent>
+              {profiles.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.full_name ?? "Unnamed"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">

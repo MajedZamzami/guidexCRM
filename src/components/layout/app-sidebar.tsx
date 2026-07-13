@@ -7,6 +7,7 @@ import {
   KanbanSquare,
   Building2,
   Compass,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,8 +27,11 @@ const NAV_ITEMS = [
   { title: "Companies", url: "/companies", icon: Building2 },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const navItems = isAdmin
+    ? [...NAV_ITEMS, { title: "Settings", url: "/settings", icon: Settings }]
+    : NAV_ITEMS;
 
   return (
     <Sidebar collapsible="icon">
@@ -46,7 +50,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Overview</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isActive = pathname.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.url}>

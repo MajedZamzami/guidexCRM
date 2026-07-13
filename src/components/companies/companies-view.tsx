@@ -451,6 +451,7 @@ export function CompaniesView({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         stages={stages}
+        profiles={profiles}
         company={editing}
       />
 

@@ -32,6 +32,7 @@ export interface PipelineCompanyRow {
   company: Company;
   contactCount: number;
   addedByName: string | null;
+  doorOpenerName: string | null;
   lastActivityType: string | null;
   lastActivityAt: string | null;
 }
@@ -111,6 +112,9 @@ export function PipelineBoard({
         contactCount: contactCountByCompany.get(company.id) ?? 0,
         addedByName: company.created_by
           ? (profileById.get(company.created_by)?.full_name ?? null)
+          : null,
+        doorOpenerName: company.door_opener_id
+          ? (profileById.get(company.door_opener_id)?.full_name ?? null)
           : null,
         lastActivityType: latest?.type ?? null,
         lastActivityAt: latest?.occurred_at ?? company.last_activity_at,
@@ -233,6 +237,7 @@ export function PipelineBoard({
                 company={activeCompany}
                 contactCount={contactCountByCompany.get(activeCompany.id) ?? 0}
                 addedByName={null}
+                doorOpenerName={null}
                 lastActivityType={null}
                 lastActivityAt={null}
               />
@@ -241,7 +246,12 @@ export function PipelineBoard({
         </DndContext>
       )}
 
-      <CompanyDialog open={addCompanyOpen} onOpenChange={setAddCompanyOpen} stages={stages} />
+      <CompanyDialog
+        open={addCompanyOpen}
+        onOpenChange={setAddCompanyOpen}
+        stages={stages}
+        profiles={profiles}
+      />
     </div>
   );
 }
